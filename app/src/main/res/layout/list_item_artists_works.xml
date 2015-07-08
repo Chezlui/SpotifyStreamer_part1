@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/imageViewAlbumCover"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/a86ea149077b22239f41e8b17f7261c475b084ee"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp"/>
+    <TextView
+        android:id="@+id/textViewTrackTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="A Sky Full of Stars"
+        android:layout_marginLeft="26dp"
+        android:layout_marginStart="26dp"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:maxLines="2"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/imageViewAlbumCover"
+        android:layout_toEndOf="@+id/imageViewAlbumCover"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/textViewAlbumTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ghost Stories"
+        android:textSize="15sp"
+        android:maxLines="2"
+        android:layout_below="@+id/textViewTrackTitle"
+        android:layout_alignLeft="@+id/textViewTrackTitle"
+        android:layout_alignStart="@+id/textViewTrackTitle"
+        android:layout_marginTop="7dp"/>
+
+</RelativeLayout>

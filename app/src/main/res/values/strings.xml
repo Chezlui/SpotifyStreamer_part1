@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SpotifyStreamer</string>
+<string name="hello_world">Hello world!</string>
+    <string name="country_code">Country code</string>
+        <string name="title_activity_display_artist_work">Top 10 Tracks</string>
+    <string name="no_tracks">No tracks found</string>
+    <string name="no_artists">No artist found</string>
+    <string name="accept">Accept</string>
+    <string name="cancel">Cancel</string>
+</resources>
