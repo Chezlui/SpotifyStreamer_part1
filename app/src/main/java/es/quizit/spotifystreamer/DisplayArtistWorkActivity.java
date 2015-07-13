@@ -6,15 +6,17 @@ import android.os.Bundle;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.Callback;
@@ -23,10 +25,10 @@ import retrofit.client.Response;
 
 public class DisplayArtistWorkActivity extends AppCompatActivity {
 
-	private ArrayList<Track> myTracksList;
+	private ArrayList<MyTrack> myTracksList;
 	SpotifyApi spotifyApi;
 	SpotifyService spotifyService;
-	private TracksAdapter tracksAdapter;
+	private MyTracksAdapter tracksAdapter;
 	private Context mContext;
 	private Toast mToast;
 	private ArrayMap<String, Object> mArrayMap;
@@ -50,17 +52,26 @@ public class DisplayArtistWorkActivity extends AppCompatActivity {
 		}
 
 
-		myTracksList = new ArrayList<Track>();
+		if(savedInstanceState == null || !savedInstanceState.containsKey("tracksList")) {
+			myTracksList = new ArrayList<MyTrack>();
+			FetchTracksAsynctask fetchTracksAsynctask = new FetchTracksAsynctask();
+			fetchTracksAsynctask.execute(artistId);
+		} else {
+			myTracksList = savedInstanceState.getParcelableArrayList("tracksList");
+		}
 
 		spotifyApi = new SpotifyApi();
 		spotifyService = spotifyApi.getService();
 
-		tracksAdapter = new TracksAdapter(this, myTracksList);
+		tracksAdapter = new MyTracksAdapter(this, myTracksList);
 		ListView listViewTracks = (ListView) findViewById(R.id.listViewTracks);
 		listViewTracks.setAdapter(tracksAdapter);
+	}
 
-		FetchTracksAsynctask fetchTracksAsynctask = new FetchTracksAsynctask();
-		fetchTracksAsynctask.execute(artistId);
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putParcelableArrayList("tracksList", myTracksList);
+		super.onSaveInstanceState(outState);
 	}
 
 
@@ -78,7 +89,7 @@ public class DisplayArtistWorkActivity extends AppCompatActivity {
 						if (mToast != null) mToast.cancel();
 					}
 					Log.d(LOG, tracks.toString());
-					myTracksList = (ArrayList<Track>) tracks.tracks;
+					myTracksList = tracksPager2MyTracksList(tracks.tracks);
 					tracksAdapter.clear();
 					tracksAdapter.addAll(myTracksList);
 					tracksAdapter.notifyDataSetChanged();
@@ -92,5 +103,32 @@ public class DisplayArtistWorkActivity extends AppCompatActivity {
 
 			return null;
 		}
+	}
+
+	public ArrayList<MyTrack> tracksPager2MyTracksList(List<Track> tracks) {
+		ArrayList<MyTrack> myTracks2Return = new ArrayList<MyTrack>();
+		//ArrayList<Track> tracks = (ArrayList<Track>) tracks.artists.items;
+		Iterator<Track> trackIterator = tracks.iterator();
+
+		MyTrack myTrack;
+		Track track;
+		while (trackIterator.hasNext()) {
+			track = trackIterator.next();
+			String imageUrl = "";
+			switch (track.album.images.size()) {
+				case 0:
+					break;
+				case 1:
+					imageUrl = track.album.images.get(0).url;
+					break;
+				default:
+					imageUrl = track.album.images.get(track.album.images.size() - 2).url;
+			}
+
+			myTrack = new MyTrack(track.album.name, track.preview_url, track.name, imageUrl);
+			myTracks2Return.add(myTrack);
+		}
+
+		return myTracks2Return;
 	}
 }

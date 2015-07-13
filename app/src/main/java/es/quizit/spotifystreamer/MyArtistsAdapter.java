@@ -24,16 +24,16 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * Created by Chezlui on 07/07/2015.
  */
-public class ArtistsAdapter extends ArrayAdapter<Artist> {
+public class MyArtistsAdapter extends ArrayAdapter<MyArtist> {
 
 
-	public ArtistsAdapter(Context context, ArrayList<Artist> objects) {
+	public MyArtistsAdapter(Context context, ArrayList<MyArtist> objects) {
 		super(context, 0, objects);
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		Artist artist = getItem(position);
+		MyArtist artist = getItem(position);
 		if (convertView == null) {
 			convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artists, parent, false);
 		}
@@ -41,11 +41,19 @@ public class ArtistsAdapter extends ArrayAdapter<Artist> {
 		TextView textViewArtistName = (TextView) convertView.findViewById(R.id.textViewArtistName);
 		textViewArtistName.setText(artist.name);
 		ImageView imageView = (ImageView) convertView.findViewById(R.id.imageViewArtist);
-		int size = artist.images.size();
-		Image image;
-		if (size > 1) {
-			image = (Image) artist.images.get(artist.images.size() - 2);
-			Picasso.with(getContext()).load(image.url).into(imageView);
+//		//int size = artist.images.size();
+//		Image image;
+//		if (size > 1) {
+//			image = (Image) artist.images.get(artist.images.size() - 2);
+//			Picasso.with(getContext()).load(image.url).into(imageView);
+//		} else {
+//			Drawable noImage = ResourcesCompat.getDrawable(getContext().getResources(), R.drawable.no_image, null);
+//			imageView.setImageDrawable(noImage);
+//		}
+		String image;
+		if (artist.urlImage != "") {
+			image = artist.urlImage;
+			Picasso.with(getContext()).load(image).into(imageView);
 		} else {
 			Drawable noImage = ResourcesCompat.getDrawable(getContext().getResources(), R.drawable.no_image, null);
 			imageView.setImageDrawable(noImage);

@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
@@ -40,11 +41,13 @@ public class MainActivity extends AppCompatActivity {
 	SpotifyApi spotifyApi;
 	SpotifyService spotifyService;
 	ListView listViewArtistsFound;
-	ArtistsAdapter artistsAdapter;
-	ArrayList<Artist> myArtistsArrayList;
+	MyArtistsAdapter artistsAdapter;
+	ArrayList<MyArtist> myArtistsArrayList;
 	FetchArtisAsynctask mFetchArtisAsynctask;
 	private Context mContext;
 	private Toast mToast;
+
+	private int characterCount;	// To detect if an onTextChanged call comes from recreating the activity and not user input
 
 	private String mCountryCode = "ES";
 
@@ -68,12 +71,16 @@ public class MainActivity extends AppCompatActivity {
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				String artist = mTextViewArtist2Search.getText().toString();
-				if(mFetchArtisAsynctask != null) {
-					mFetchArtisAsynctask.cancel(true);
+				if (characterCount != count) {	// if user input search Artist
+					String artist = mTextViewArtist2Search.getText().toString();
+					if (mFetchArtisAsynctask != null) {
+						mFetchArtisAsynctask.cancel(true);
+					}
+					mFetchArtisAsynctask = new FetchArtisAsynctask();
+					mFetchArtisAsynctask.execute(artist);
 				}
-				mFetchArtisAsynctask = new FetchArtisAsynctask();
-				mFetchArtisAsynctask.execute(artist);
+
+				characterCount = count;
 			}
 
 			@Override
@@ -82,18 +89,24 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		myArtistsArrayList = new ArrayList<Artist>();
+		if(savedInstanceState == null || !savedInstanceState.containsKey("artistsList")) {
+			myArtistsArrayList = new ArrayList<MyArtist>();
+			characterCount = 0;
+		} else {
+			myArtistsArrayList = savedInstanceState.getParcelableArrayList("artistsList");
+			characterCount = savedInstanceState.getInt("characterCount");
+		}
 
-		artistsAdapter = new ArtistsAdapter(this, myArtistsArrayList);
+		artistsAdapter = new MyArtistsAdapter(this, myArtistsArrayList);
 		listViewArtistsFound = (ListView) findViewById(R.id.listViewArtists);
 		listViewArtistsFound.setAdapter(artistsAdapter);
 
 		listViewArtistsFound.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Artist artist = (Artist) listViewArtistsFound.getItemAtPosition(position);
+				MyArtist artist = (MyArtist) listViewArtistsFound.getItemAtPosition(position);
 				Intent intent = new Intent(getApplicationContext(), DisplayArtistWorkActivity.class);
-				intent.putExtra(artist_id_extra, artist.id);
+				intent.putExtra(artist_id_extra, artist.spotifyId);
 				intent.putExtra(country_code_extra, mCountryCode);
 				startActivity(intent);
 			}
@@ -108,6 +121,13 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putParcelableArrayList("artistsList", myArtistsArrayList);
+		outState.putInt("characterCount", characterCount);
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
@@ -116,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
 		//noinspection SimplifiableIfStatement
 		if (id == R.id.action_country_code) {
-			Dialog dialog = myOptionsDialog();
+			Dialog dialog = openDialogSettings();
 			dialog.show();
 			return true;
 		}
@@ -124,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	private Dialog myOptionsDialog() {
+	private Dialog openDialogSettings() {
 		final View layout = View.inflate(this, R.layout.country_code_dialog, null);
 		final EditText countryCodeEditTexts = ((EditText) layout.findViewById(R.id.editTextCountryDialog));
 
@@ -160,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 						if (mToast != null) mToast.cancel();
 					}
 					Log.d(LOG, artistsPager.toString());
-					myArtistsArrayList = (ArrayList<Artist>) artistsPager.artists.items;
+					myArtistsArrayList = artistPager2MyArtistsList(artistsPager);
 					artistsAdapter.clear();
 					artistsAdapter.addAll(myArtistsArrayList);
 					artistsAdapter.notifyDataSetChanged();
@@ -174,5 +194,33 @@ public class MainActivity extends AppCompatActivity {
 
 			return null;
 		}
+	}
+
+
+	public ArrayList<MyArtist> artistPager2MyArtistsList(ArtistsPager artistsPager) {
+		ArrayList<MyArtist> myArtists2Return = new ArrayList<MyArtist>();
+		ArrayList<Artist> artists = (ArrayList<Artist>) artistsPager.artists.items;
+		Iterator<Artist> artistIterator = artists.iterator();
+
+		MyArtist myArtist;
+		Artist artist;
+		while (artistIterator.hasNext()) {
+			artist = artistIterator.next();
+			String imageUrl = "";
+			switch (artist.images.size()) {
+				case 0:
+					break;
+				case 1:
+					imageUrl = artist.images.get(0).url;
+					break;
+				default:
+					imageUrl = artist.images.get(artist.images.size() - 2).url;
+			}
+
+			myArtist = new MyArtist(artist.name, artist.id, imageUrl);
+			myArtists2Return.add(myArtist);
+		}
+
+		return myArtists2Return;
 	}
 }
