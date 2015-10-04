@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				MyArtist artist = (MyArtist) listViewArtistsFound.getItemAtPosition(position);
-				Intent intent = new Intent(getApplicationContext(), DisplayArtistWorkActivity.class);
+				Intent intent = new Intent(getApplicationContext(), ArtistTracksActivity.class);
 				intent.putExtra(artist_id_extra, artist.spotifyId);
 				intent.putExtra(country_code_extra, mCountryCode);
 				startActivity(intent);

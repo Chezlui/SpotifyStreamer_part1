@@ -7,4 +7,6 @@
     <string name="no_artists">No artist found</string>
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>
+        <string name="title_activity_player">PlayerActivity</string>
+    <string name="action_settings">Settings</string>
 </resources>

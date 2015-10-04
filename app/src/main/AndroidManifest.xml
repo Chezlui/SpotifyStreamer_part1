@@ -20,12 +20,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DisplayArtistWorkActivity"
+            android:name=".ArtistTracksActivity"
             android:label="@string/title_activity_display_artist_work"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="es.quizit.spotifystreamer.MainActivity" />
+        </activity>
+        <activity
+            android:name=".PlayerActivity"
+            android:label="@string/title_activity_player" >
         </activity>
     </application>
 
