@@ -35,6 +35,7 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import es.quizit.spotifystreamer.service.PlayerService;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 
@@ -47,9 +48,11 @@ public class PlayerFragment extends DialogFragment {
 	SpotifyService spotifyService;
 	private Context mContext;
 	private ArrayMap<String, Object> mArrayMap;
-	private MediaPlayer mediaPlayer;
+
 	private boolean shouldPlay = true;
 	private final Handler mHandler = new Handler();
+
+	private MediaPlayer mediaPlayer;
 
 	private View rootView;
 
@@ -112,6 +115,28 @@ public class PlayerFragment extends DialogFragment {
 
 		mContext = getActivity();
 
+		// Media Player
+		mediaPlayer = new MediaPlayer();
+		mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+			@Override
+			public void onPrepared(MediaPlayer mp) {
+				if(shouldPlay) {
+					mp.start();
+					pauseButton.setVisibility(View.VISIBLE);
+					playButton.setVisibility(View.INVISIBLE);
+
+					// Only when prepared, duration is well known
+					if(mediaPlayer != null){
+						int duration = mediaPlayer.getDuration();
+						if (duration > 0) {
+							seekBar.setMax(duration / 1000);
+							totalTimeTvw.setText(timeMsec2TimeString(duration));
+						}
+
+					}
+				}
+			}
+		});
 
 		Bundle extras = getActivity().getIntent().getExtras();
 		if(extras != null) {
@@ -179,7 +204,7 @@ public class PlayerFragment extends DialogFragment {
 		nextButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(currentPlayerTrack == myTracksList.size()-1){
+				if (currentPlayerTrack == myTracksList.size() - 1) {
 					Toast.makeText(mContext, "Tracklists's limit reached", Toast.LENGTH_SHORT).show();
 				} else {
 					currentPlayerTrack += 1;
@@ -189,9 +214,7 @@ public class PlayerFragment extends DialogFragment {
 			}
 		});
 
-		int duration = mediaPlayer.getDuration();
-		if (duration > 0) { seekBar.setMax(duration / 1000);
-		}
+
 		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -277,31 +300,28 @@ public class PlayerFragment extends DialogFragment {
 			artistName.setText(myTrack.artistName);
 			albumTitle.setText(myTrack.albumName);
 			trackTitle.setText(myTrack.trackName);
-			if(mediaPlayer != null){
-				totalTimeTvw.setText(timeMsec2TimeString(mediaPlayer.getDuration()));
-			}
+			// Track duration moved to onPrepared Media Player
 		}
 	}
 
 	private void loadSong(int mSeconds) {
 		try {
 			String url = myTracksList.get(currentPlayerTrack).previewAudioUrl;
-			mediaPlayer = new MediaPlayer();
+			// TODO startService or Change song in service
 			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			mediaPlayer.reset();
 			mediaPlayer.setDataSource(url);
-			mediaPlayer.prepare();
-			fillScreen();
-
-			if(shouldPlay) {
-				mediaPlayer.start();
-			}
+			mediaPlayer.prepareAsync();
 			if(mSeconds > 0) {
 				mediaPlayer.seekTo(mSeconds);
 			}
+			fillScreen();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			Toast.makeText(mContext, "Problem accessing song", Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
 	}
