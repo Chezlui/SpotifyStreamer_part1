@@ -49,10 +49,7 @@ public class PlayerFragment extends DialogFragment {
 	private Context mContext;
 	private ArrayMap<String, Object> mArrayMap;
 
-	private boolean shouldPlay = true;
 	private final Handler mHandler = new Handler();
-
-	private MediaPlayer mediaPlayer;
 
 	private View rootView;
 
@@ -114,29 +111,7 @@ public class PlayerFragment extends DialogFragment {
 		ButterKnife.bind(this, rootView);
 
 		mContext = getActivity();
-
-		// Media Player
-		mediaPlayer = new MediaPlayer();
-		mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-			@Override
-			public void onPrepared(MediaPlayer mp) {
-				if(shouldPlay) {
-					mp.start();
-					pauseButton.setVisibility(View.VISIBLE);
-					playButton.setVisibility(View.INVISIBLE);
-
-					// Only when prepared, duration is well known
-					if(mediaPlayer != null){
-						int duration = mediaPlayer.getDuration();
-						if (duration > 0) {
-							seekBar.setMax(duration / 1000);
-							totalTimeTvw.setText(timeMsec2TimeString(duration));
-						}
-
-					}
-				}
-			}
-		});
+		PlayerService.startInitPlayer(mContext);
 
 		Bundle extras = getActivity().getIntent().getExtras();
 		if(extras != null) {
@@ -153,112 +128,115 @@ public class PlayerFragment extends DialogFragment {
 				currentPlayerTrack = savedInstanceState.getInt("playerCurrenTrack");
 			}
 
-			if(savedInstanceState.containsKey("playerPlaying")) {
-				shouldPlay = savedInstanceState.getBoolean("playerPlaying");
-			}
+			// TODO shouldPlay
+//			if(savedInstanceState.containsKey("playerPlaying")) {
+//				shouldPlay = savedInstanceState.getBoolean("playerPlaying");
+//			}
 		}
 
-		if (shouldPlay) {
-			playButton.setVisibility(View.INVISIBLE);
-			pauseButton.setVisibility(View.VISIBLE);
-		} else {
-			pauseButton.setVisibility(View.INVISIBLE);
-			playButton.setVisibility(View.VISIBLE);
-		}
+//		if (shouldPlay) {
+//			playButton.setVisibility(View.INVISIBLE);
+//			pauseButton.setVisibility(View.VISIBLE);
+//		} else {
+//			pauseButton.setVisibility(View.INVISIBLE);
+//			playButton.setVisibility(View.VISIBLE);
+//		}
 
 		loadSong(currentTrackTime);
 
-		playButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				playButton.setVisibility(View.INVISIBLE);
-				pauseButton.setVisibility(View.VISIBLE);
-				mediaPlayer.start();
-				shouldPlay = true;
-			}
-		});
+		// TODO Descomentar e implementar
+//		playButton.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				playButton.setVisibility(View.INVISIBLE);
+//				pauseButton.setVisibility(View.VISIBLE);
+//				mediaPlayer.start();
+//				shouldPlay = true;
+//			}
+//		});
+//
+//		pauseButton.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				pauseButton.setVisibility(View.INVISIBLE);
+//				playButton.setVisibility(View.VISIBLE);
+//				mediaPlayer.pause();
+//				shouldPlay = false;
+//			}
+//		});
+//
+//		previousButton.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				if(currentPlayerTrack == 0){
+//					Toast.makeText(mContext, "Tracklists's limit reached", Toast.LENGTH_SHORT).show();
+//				} else {
+//					currentPlayerTrack -= 1;
+//					mediaPlayer.stop();
+//					loadSong(0);
+//				}
+//			}
+//		});
+//
+//		nextButton.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				if (currentPlayerTrack == myTracksList.size() - 1) {
+//					Toast.makeText(mContext, "Tracklists's limit reached", Toast.LENGTH_SHORT).show();
+//				} else {
+//					currentPlayerTrack += 1;
+//					mediaPlayer.stop();
+//					loadSong(0);
+//				}
+//			}
+//		});
 
-		pauseButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				pauseButton.setVisibility(View.INVISIBLE);
-				playButton.setVisibility(View.VISIBLE);
-				mediaPlayer.pause();
-				shouldPlay = false;
-			}
-		});
 
-		previousButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if(currentPlayerTrack == 0){
-					Toast.makeText(mContext, "Tracklists's limit reached", Toast.LENGTH_SHORT).show();
-				} else {
-					currentPlayerTrack -= 1;
-					mediaPlayer.stop();
-					loadSong(0);
-				}
-			}
-		});
+		// TODO Idem anterior
+//		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//			@Override
+//			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//				if ((mediaPlayer != null) & fromUser) {
+//					mediaPlayer.seekTo(progress * 1000);
+//				}
+//			}
+//
+//			@Override
+//			public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//			}
+//
+//			@Override
+//			public void onStopTrackingTouch(SeekBar seekBar) {
+//
+//			}
+//		});
 
-		nextButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (currentPlayerTrack == myTracksList.size() - 1) {
-					Toast.makeText(mContext, "Tracklists's limit reached", Toast.LENGTH_SHORT).show();
-				} else {
-					currentPlayerTrack += 1;
-					mediaPlayer.stop();
-					loadSong(0);
-				}
-			}
-		});
-
-
-		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				if ((mediaPlayer != null) & fromUser) {
-					mediaPlayer.seekTo(progress * 1000);
-				}
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-
-			}
-
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-
-			}
-		});
-
-		getActivity().runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (mediaPlayer != null) {
-					seekBar.setProgress(mediaPlayer.getCurrentPosition() / 1000);
-					actualTimeTvw.setText(timeMsec2TimeString(mediaPlayer.getCurrentPosition()));
-					currentTrackTime = mediaPlayer.getCurrentPosition();
-					if (!mediaPlayer.isPlaying()) {
-						pauseButton.setVisibility(View.INVISIBLE);
-						playButton.setVisibility(View.VISIBLE);
-					}
-				}
-				mHandler.postDelayed(this, 250);
-			}
-		});
+//		getActivity().runOnUiThread(new Runnable() {
+//			@Override
+//			public void run() {
+//				if (mediaPlayer != null) {
+//					seekBar.setProgress(mediaPlayer.getCurrentPosition() / 1000);
+//					actualTimeTvw.setText(timeMsec2TimeString(mediaPlayer.getCurrentPosition()));
+//					currentTrackTime = mediaPlayer.getCurrentPosition();
+//					if (!mediaPlayer.isPlaying()) {
+//						pauseButton.setVisibility(View.INVISIBLE);
+//						playButton.setVisibility(View.VISIBLE);
+//					}
+//				}
+//				mHandler.postDelayed(this, 250);
+//			}
+//		});
 
 	}
 
-	@Override
-	public void onStop() {
-		if ((mediaPlayer != null) && (mediaPlayer.isPlaying())) {
-			mediaPlayer.stop();
-		}
-		super.onStop();
-	}
+//	@Override
+//	public void onStop() {
+//		if ((mediaPlayer != null) && (mediaPlayer.isPlaying())) {
+//			mediaPlayer.stop();
+//		}
+//		super.onStop();
+//	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -275,13 +253,13 @@ public class PlayerFragment extends DialogFragment {
 		return super.onOptionsItemSelected(item);
 	}
 
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putInt("playerTimePosition", currentTrackTime);
-		outState.putInt("playerCurrenTrack", currentPlayerTrack);
-		outState.putBoolean("playerPlaying", shouldPlay);
-		super.onSaveInstanceState(outState);
-	}
+//	@Override
+//	public void onSaveInstanceState(Bundle outState) {
+//		outState.putInt("playerTimePosition", currentTrackTime);
+//		outState.putInt("playerCurrenTrack", currentPlayerTrack);
+//		outState.putBoolean("playerPlaying", shouldPlay);
+//		super.onSaveInstanceState(outState);
+//	}
 
 	private void fillScreen() {
 		MyTrack myTrack = myTracksList.get(currentPlayerTrack);
@@ -308,19 +286,9 @@ public class PlayerFragment extends DialogFragment {
 		try {
 			String url = myTracksList.get(currentPlayerTrack).previewAudioUrl;
 			// TODO startService or Change song in service
-			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.reset();
-			mediaPlayer.setDataSource(url);
-			mediaPlayer.prepareAsync();
-			if(mSeconds > 0) {
-				mediaPlayer.seekTo(mSeconds);
-			}
+			PlayerService.startPlaySong(mContext, url);
+
 			fillScreen();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			Toast.makeText(mContext, "Problem accessing song", Toast.LENGTH_SHORT).show();
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
